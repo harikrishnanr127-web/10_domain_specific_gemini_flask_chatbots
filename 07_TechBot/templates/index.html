@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Bot</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top left,#243b55,#0b1020 48%,#05070d);color:#fff;display:flex;align-items:center;justify-content:center;padding:18px}
+.shell{width:min(980px,100%);height:min(760px,94vh);display:flex;flex-direction:column;background:rgba(10,15,28,.78);border:1px solid rgba(255,255,255,.13);border-radius:28px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.45);backdrop-filter:blur(18px)}
+.header{padding:22px 25px;display:flex;align-items:center;gap:15px;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035)}
+.logo{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#7c5cff,#00d4ff);font-size:25px;box-shadow:0 8px 25px rgba(0,212,255,.2)}
+.header h1{font-size:20px;margin:0}.header p{margin:4px 0 0;color:#9da8bf;font-size:13px}
+.status{margin-left:auto;font-size:12px;color:#7ef2bd}.dot{display:inline-block;width:7px;height:7px;background:#47e49a;border-radius:50%;margin-right:6px}
+.chat{flex:1;overflow:auto;padding:28px;display:flex;flex-direction:column;gap:15px}
+.msg{max-width:78%;padding:14px 17px;border-radius:19px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.bot{align-self:flex-start;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.08);border-bottom-left-radius:5px}
+.user{align-self:flex-end;background:linear-gradient(135deg,#6557ff,#149fe7);border-bottom-right-radius:5px}
+.composer{padding:17px;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:10px;background:rgba(0,0,0,.16)}
+input{flex:1;border:1px solid rgba(255,255,255,.13);outline:none;border-radius:16px;background:rgba(255,255,255,.06);color:white;padding:15px 17px;font-size:14px}
+input:focus{border-color:#4bbdff}
+button{border:0;border-radius:16px;padding:0 22px;background:linear-gradient(135deg,#7c5cff,#00bce8);color:white;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:600px){.shell{height:96vh;border-radius:20px}.chat{padding:18px}.msg{max-width:88%}.status{display:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="logo">✦</div>
+    <div><h1>Tech Bot</h1><p>Gemini 3.1 Flash-Lite powered assistant</p></div>
+    <div class="status"><span class="dot"></span>Online</div>
+  </div>
+  <div class="chat" id="chat">
+    <div class="msg bot">Hi! I’m <b>Tech Bot</b>. Ask me anything related to my domain.</div>
+  </div>
+  <form class="composer" id="form">
+    <input id="message" autocomplete="off" placeholder="Type your question..." required>
+    <button id="send" type="submit">Send</button>
+  </form>
+</div>
+<script>
+const form=document.getElementById("form"), input=document.getElementById("message"), chat=document.getElementById("chat"), send=document.getElementById("send");
+function add(text, cls){const el=document.createElement("div");el.className="msg "+cls;el.textContent=text;chat.appendChild(el);chat.scrollTop=chat.scrollHeight;return el}
+form.addEventListener("submit", async e=>{
+ e.preventDefault(); const msg=input.value.trim(); if(!msg)return;
+ add(msg,"user"); input.value=""; send.disabled=true;
+ const loading=add("Thinking...","bot");
+ try{
+   const r=await fetch("/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg})});
+   const d=await r.json(); loading.remove(); add(d.reply||d.error||"Something went wrong.","bot");
+ }catch(err){loading.remove();add("Could not connect to the server.","bot")}
+ finally{send.disabled=false;input.focus()}
+});
+</script>
+</body>
+</html>
